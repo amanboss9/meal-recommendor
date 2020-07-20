@@ -129,7 +129,7 @@ class SetupDB:
         """
         for i in range(len(self.food_ids)):
             chosen = []
-            for j in range(2):
+            for j in range(3):
                 boolean = bool(random.getrandbits(1))
                 random_index = random.randint(1, len(self.allergy_ids) - 1)
                 if random_index not in chosen:
@@ -147,7 +147,7 @@ class SetupDB:
 
         for i in range(len(self.food_ids)):
             chosen = []
-            for j in range(2):
+            for j in range(3):
                 boolean = bool(random.getrandbits(1))
                 random_index = random.randint(1, len(self.medical_condition_ids) - 1)
                 if random_index not in chosen:
@@ -190,18 +190,25 @@ class SetupDB:
                     self.graph_gist += """(%s) - [:DISLIKES] -> (%s),\n""" % (
                         self.user_ids[i], self.food_ids[random_index])
 
+            user_eaten = []
             random_eaten = random.randint(4, 10)
             for j in range(random_eaten):
                 random_index = random.randint(0, len(self.food_ids) - 1)
                 if random_index not in dislike_chosen:
                     self.graph_gist += """(%s) - [:EATEN_UP] -> (%s),\n""" % (
                         self.user_ids[i], self.food_ids[random_index])
+                    user_eaten.append(self.food_ids[random_index])
 
-            similar_to_eat = random.randint(4, 10)
+            similar_to_eat = random.randint(2, 4)
+            similar_foods = []
             for j in range(similar_to_eat):
                 random_index = random.randint(0, len(self.food_ids) - 1)
-                if random_index not in dislike_chosen:
-                    self.graph_gist += """(%s) - [:SIMILAR_TO_EAT] -> (%s),\n""" % (
-                        self.user_ids[i], self.food_ids[random_index])
+                if self.food_ids[random_index] not in user_eaten:
+                    similar_foods.append(self.food_ids[random_index])
+
+            for sim in similar_foods:
+                for j in user_eaten:
+                    self.graph_gist += """(%s) - [:SIMILAR_TO] -> (%s),\n""" % (
+                        sim, j)
 
         self.graph_gist = self.graph_gist[:-2]

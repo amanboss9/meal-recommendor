@@ -18,5 +18,5 @@
  - User -[:LIKES]-> Food
  - User -[:DISLIKES]-> Food
  - User -[:EATEN_UP]-> Food
- - User -[:SIMILAR_TO_EAT]-> Food
+ - Food -[:SIMILAR_TO]-> Food
  

@@ -78,15 +78,16 @@ class Runner(Thread):
 
         query = """
             WITH %s as allergies, %s as medical_condition, %s as cuisines
-            MATCH (u:User{user_id:%d})-[:LIKES|:SIMILAR_TO_EAT|:EATEN_UP]->(f:Food),
+            MATCH (u:User{user_id:%s}),(f:Food),
             (f)-[:GOOD_FOR]->(a:Allergy),
             (f)-[:GOOD_FOR]->(md:MedicalCondition),
             (f)-[:PART_OF]->  (cs:Cuisine)
-            WHERE a.name IN allergies OR md.name IN medical_condition OR cs.name IN cuisines
-            WITH f MATCH (f)-[:PART_OF]-(m:Meal) return m.name"""
-        q1 = query % ([], ['Diabetes', 'Joint Pain'], ['Kannada'], 0)
-        q2 = query % (['Cheese'], [], [], 0)
-        q3 = query % ([], [], ['Kannada'], 0)
+            WHERE (u)-[:LIKES|:EATEN_UP]->(f) AND a.name IN allergies OR md.name IN medical_condition OR cs.name IN cuisines
+            WITH f
+            MATCH (m:Meal)<-[:PART_OF]-(f:Food) RETURN DISTINCT m.name LIMIT 10"""
+        q1 = query % ([], ['Diabetes', 'Joint Pain'], ['Kannada'], 1)
+        q2 = query % (['Cheese'], [], ['Chinese'], 4)
+        q3 = query % (['Peanut'], ['Obesity'], ['Kannada'], 3)
         queries = [q1, q2, q3]
 
         with self.driver.session() as session:
@@ -102,5 +103,5 @@ class Runner(Thread):
 
 if __name__ == "__main__":
     # run function is to stress test for deleting, creating and matching operations.
-    # Runner(100, 500).run()
+    # Runner(1000, 5000).run()
     Runner(100, 500).test_get_meal_query()

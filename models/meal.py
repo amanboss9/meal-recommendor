@@ -17,12 +17,14 @@ class Meal:
             graph = GraphDB.graph()
             query = """
             WITH %s as allergies, %s as medical_condition, %s as cuisines
-            MATCH (u:User{user_id:%d})-[:LIKES|:SIMILAR_TO_EAT|:EATEN_UP]->(f:Food),
+            MATCH (u:User{user_id:%s}),(f:Food),
             (f)-[:GOOD_FOR]->(a:Allergy),
             (f)-[:GOOD_FOR]->(md:MedicalCondition),
             (f)-[:PART_OF]->  (cs:Cuisine)
-            WHERE a.name IN allergies OR md.name IN medical_condition OR cs.name IN cuisines
-            WITH f MATCH (f)-[:PART_OF]-(m:Meal) return m.name""" % (cuisines, medical_conditions, allergies, user_id)
+            WHERE (u)-[:LIKES|:EATEN_UP]->(f) AND a.name IN allergies OR md.name IN medical_condition OR cs.name IN cuisines
+            WITH f
+            MATCH (m:Meal)<-[:PART_OF]-(f:Food) RETURN DISTINCT m.name LIMIT 10""" % (
+                allergies, medical_conditions, cuisines, user_id)
             results = graph.run(query).data()
             print(results)
             return results
